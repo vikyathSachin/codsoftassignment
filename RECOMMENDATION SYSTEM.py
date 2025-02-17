@@ -1,46 +1,44 @@
-import pandas as pd
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.feature_extraction.text import CountVectorizer
-
-# Sample dataset (movies with genres)
-data = {
-    'MovieID': [1, 2, 3, 4, 5],
-    'Title': ['The Matrix', 'Inception', 'Interstellar', 'The Dark Knight', 'Memento'],
-    'Genre': ['Action Sci-Fi', 'Sci-Fi Thriller', 'Sci-Fi Drama', 'Action Thriller', 'Mystery Thriller']
+# Sample movie dataset with genres
+movies = {
+     "MAX": ["Action"],
+    "SPIDER MAN": ["Action"],
+    "ROBERT": ["Action"],
+    "ITS END WITH US": ["Romance", "Drama"],
+    "DIL BECHARA": ["Romance", "Drama"],
+    "LOVE MOCKTAIL": ["Romance"],
+    "TAMASHA": ["Romance","DRAMA"],
+    "BRAMASTRA": ["Sci-fi", "Action"],
+    "BLINK": ["Sci-fi","Mythological"],
+    "RAVAN":["sci-fi","Action"],
+    "KANTARA":["Action","Adventure","Drama"],
+    "CHOO MANTHAR":["Horror","Thriller"],
+    "LAST BUS":["Horror","Fantasy","Thriller"],
+    "BHOO KAILASA":["Mythological"],
+    "BHAJARANGI":["Mythological","Adventure","Fantasy"],
+    "CHARLIE 777": ["DRAMA"],
 }
 
-movies = pd.DataFrame(data)
+# Function to get movie recommendations based on a preferred genre
+def recommend_movies(favorite_movie):
+    if favorite_movie not in movies:
+        print("Sorry, movie not found in our database.")
+        return []
 
-# Content-based filtering using genres
-def recommend_movies(movie_title, movies_df, top_n=3):
-    # Create a count matrix from the 'Genre' column
-    count_vectorizer = CountVectorizer()
-    count_matrix = count_vectorizer.fit_transform(movies_df['Genre'])
+    favorite_genres = movies[favorite_movie]
+    recommendations = []
 
-    # Compute cosine similarity between movies
-    cosine_sim = cosine_similarity(count_matrix, count_matrix)
+    for movie, genres in movies.items():
+        if movie != favorite_movie and any(genre in favorite_genres for genre in genres):
+            recommendations.append(movie)
 
-    # Create a mapping of movie titles to indices
-    movie_indices = pd.Series(movies_df.index, index=movies_df['Title']).drop_duplicates()
-
-    # Get the index of the movie
-    idx = movie_indices[movie_title]
-
-    # Get similarity scores for all movies with the input movie
-    sim_scores = list(enumerate(cosine_sim[idx]))
-
-    # Sort movies by similarity score
-    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
-
-    # Get the top N most similar movies
-    top_movies = sim_scores[1:top_n+1]
-
-    # Get the movie titles
-    recommended_movies = [movies_df['Title'].iloc[i[0]] for i in top_movies]
-
-    return recommended_movies
+    return recommendations
 
 # Example usage
-movie_to_recommend = 'Inception'
-recommendations = recommend_movies(movie_to_recommend, movies)
-print(f"Movies recommended for '{movie_to_recommend}': {recommendations}")
+user_movie = input("Enter a movie you like: ")
+recommendations = recommend_movies(user_movie)
+
+if recommendations:
+    print("You might also like:", ", ".join(recommendations))
+else:
+    print("No recommendations found.")
+
